@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="content">
+        !
+
+        <table>
+            <tbody
+                    id="board"
+            >
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            </tbody>
+        </table>
+
+
+        <div class="input-container">
+            <input type="text" maxlength="5" minlength="5">
+            <button>Enter!</button>
+        </div>
+
+
+        <p id="game-over"></p>
+
+    </div>
+</div>
+</body>
+
+<script>
+    const answer = "LILLY";//could easily pull a random word from a list here
+    let currentGuessNumber = 0;
+
+    const board = document.getElementById('board');
+    const textBox = document.querySelector('input');
+    const submitButton = document.querySelector('button');
+    const gameOverMessage = document.getElementById('game-over');
+
+    submitButton.addEventListener('click', function (e) {
+        let guess = textBox.value;
+        if (guess.length !== 5) return;//don't accept words of the incorrect size
+        //clear input
+        textBox.value = '';
+
+        //render our guess to the board
+        writeGuess(guess);
+
+        currentGuessNumber++;
+        //check for win condition
+        if (guess.toUpperCase() === answer.toUpperCase()) {
+            gameOverMessage.textContent = 'You won!!!';
+            submitButton.remove();
+            textBox.remove();
+            return;
+        }
+
+        //check for loss condition
+        if (currentGuessNumber >= board.children.length) {
+            gameOverMessage.textContent = `You lost :(  The word was ${answer}.`;
+            submitButton.remove();
+            textBox.remove();
+        }
+
+    })
+
+
+    /**
+     * turns our guess into an array where each character position represents the following:
+     * 2 -> Perfect Match
+     * 1 -> In Word, but not a perfect match and not matched yet
+     * 0 -> Not in the word
+     */
+    function buildMatchArray(guess) {
+
+        guess = guess.toUpperCase();//easier to do matching if all uppercase or all lower case
+        let answerAsArray = [];
+        let matchArray = [0, 0, 0, 0, 0];//assume no match to start
+        for (let i = 0; i < answer.length; i++) {
+            let letter = answer[i].toUpperCase();
+            answerAsArray.push(letter);
+        }
+
+        // find exact matches first
+        for (let i = 0; i < guess.length; i++) {
+            let letter = guess[i];
+            if (letter === answer[i]) {
+                answerAsArray[i] = null; //remove this letter to prevent matching in other positions
+                matchArray[i] = 2;//indicate we found a match
+            }
+        }
+
+        // in-word matches and misses
+        for (let i = 0; i < guess.length; i++) {
+            let letter = guess[i];
+            let index = answerAsArray.indexOf(letter);
+
+            //if letter in not in remaining answer letters then skip this iteration of the loop
+            if (index === -1) {
+                continue;
+            }
+
+            //remove this letter to prevent matching in other positions
+            answerAsArray[index] = null;
+            //indicate a 'in-word' match at this position
+            matchArray[i] = 1;
+        }
+
+        return matchArray;
+    }
+
+    function writeGuess(guess) {
+
+        //build our match array so we can easily see what matches
+        let matchArray = buildMatchArray(guess);
+
+        //This is our table row ('tr' tag)
+        let currentGuessRow = board.children[currentGuessNumber];
+        //this is all of our columns for our row ('td' tag)
+        let columns = currentGuessRow.children;
+
+        for (let i = 0; i < matchArray.length; i++) {
+            let column = columns[i];
+            column.textContent = guess[i].toUpperCase();
+
+            if (matchArray[i] === 2) { //perfect match
+                column.classList.add('correct');
+            } else if (matchArray[i] === 1) { //in word,  not perfect match
+                column.classList.add('in-word');
+            } else {
+                column.classList.add('incorrect');//no match
+            }
+        }
+
+    }
+
+</script>
+</html>
